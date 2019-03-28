@@ -1,7 +1,6 @@
-var http = require('http');
-var url = require('url');
-var querystring = require('querystring');
-var mysql = require('mysql');
+var http = require('http');//请求http模块
+var url = require('url');//请求url模块
+var mysql = require('mysql');//请求mysql模块
 var connection = mysql.createConnection({
     host : 'localhost',
     user : 'root',
@@ -9,27 +8,34 @@ var connection = mysql.createConnection({
     port : '3306',
     database : 'test1'
 });
-connection.connect();
 
+connection.connect(function(err) {
+    if(err) {
+        console.log("connect wrong");
+    }else{
+        console.log("connect right");
+    }
+});//连接数据库
 
-var server = http.createServer(function(req,res){     
-    var pathname = url.parse(req.url).pathname;  //定义pathname为 获取url
-	var query = url.parse(req.url,true).query;  //query 是一个获取url中参数的变量
-	var student_id = query.stu_id;   //定义student_id 为 student_id的参数值
-	var course_id  = query.class_id; 	 //定义course_id  为 course_id的参数值
+var server = http.createServer(function(req,res){     //创建服务器对象
+    var pathname = url.parse(req.url).pathname;  // 获取url
+
 //三、根据参数返回指定数值	
-	if (pathname == '/test'){   //确定url为所规定的格式（api文档里的）
-        if(student_id && course_id) {    // 如果存在 student_id 和 course_id
-			var sql = 'SELECT * FROM new_table';   //定义 sql为一个字符串 （从student_table提取数据）  
+	if (pathname == '/test'){   //指定url为/test格式
+                  var query = url.parse(req.url,true).query;  //获取url中的参数
+	var student_id = query.stu_id; 
+	var class_id  = query.class_id; 
+        if(student_id && class_id) {    
+			var sql = 'SELECT * FROM new_table WHERE stu_id=stu_id AND class_id=class_id';   //从数据库的对应表中提取数据  
 			connection.query(sql, function (error, result){  //将url中的参数与数据库进行连接、比对
-				if (error){   //参数不匹配
+				if (error){  
 					console.log('wrong'); 
 				return;
 				}
-				if(result){	  //参数匹配，开始读取数据
+				if(result){	 
 					for ( var i = 0; i < result.length ; i++ ){   //从数据第一行开始匹配
-							  //参数匹配时，输出成绩
-						if ( result[i].class_id == course_id && result[i].stu_id == student_id ){							     
+							  //输出成绩
+						if ( result[i].class_id == class_id && result[i].stu_id == student_id ){							     
 						    res.write('grades:'+result[i].grades); 	
 						break;						
 						}	
